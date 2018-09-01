@@ -40,7 +40,7 @@ app.get('/', function(appReq, appRes) {
 app.get('/:query', function (appReq, appRes) {
 
   let food = {
-    api_key: "314d3d963539dc5403f5328dbde78dbe",
+    api_key: "e2301a166e60cb45ed5b6e8f1e0cf353",
     nojsoncallback: 1
   };
 
@@ -55,10 +55,11 @@ app.get('/:query', function (appReq, appRes) {
 
   function createFoodOptionsSearch(food, query) {
     let options = {
-      hostname: 'food2fork.com',
+      hostname: 'www.food2fork.com',
       port: 443,
       path:`/api/search?`,
-      //   search?key=314d3d963539dc5403f5328dbde78dbe&q=shredded%20chicken`,
+      ///https://www.food2fork.com/api/search?key=e2301a166e60cb45ed5b6e8f1e0cf353&q=potato
+      //https://www.food2fork.com/api/search?key=e2301a166e60cb45ed5b6e8f1e0cf353&q=potato
       method: 'GET'
     }
     let str = `key=${food.api_key}` +
@@ -72,7 +73,7 @@ app.get('/:query', function (appReq, appRes) {
 
   function createFoodOptionsRecipe(food, rId) {
     let options = {
-      hostname: 'food2fork.com',
+      hostname: 'www.food2fork.com',
       port: 443,
       path:
       `/api/get?`,
@@ -107,7 +108,7 @@ app.get('/:query', function (appReq, appRes) {
     return str;
   }
 
-  let options = createFoodOptionsSearch(food, appReq.params.query, 1);
+  let options = createFoodOptionsSearch(food, appReq.params.query);
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
     console.log("headers: ", foodRes.headers);
@@ -142,8 +143,7 @@ app.get('/:query', function (appReq, appRes) {
 app.get('/analysis/:rId', function (appReq, appRes) {
 
   let food = {
-    api_key: "314d3d963539dc5403f5328dbde78dbe",
-    nojsoncallback: 1
+    api_key: "e2301a166e60cb45ed5b6e8f1e0cf353",
   };
 
   let edamam = {
@@ -152,7 +152,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
     //method: GET
   };
 
-  function createfoodOptionsSearch(food, query, page) {
+  function createfoodOptionsSearch(food, query) {
     let options = {
       hostname: 'food2fork.com',
       port: 443,
@@ -168,7 +168,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
 
   function createFoodOptionsRecipe(food, rId) {
     let options = {
-      hostname: 'food2fork.com',
+      hostname: 'www.food2fork.com',
       port: 443,
       path:
       `/api/get?`,
@@ -231,22 +231,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
     let ingredients = rsp.recipe.ingredients;
     let title = rsp.recipe.title;
     let s = '';
-    connection.query('USE mydb');
     for (ingredient of ingredients) {
-      ingAr = [];
-      ingAr = ingredient;
-      //console.log(ingAr);
-      for (var i = 0; i < ingAr.length; i++) {
-        //console.log(ingAr[i]);
-        if (ingAr[i] == ','){
-          //console.log("###A###");
-        }
-      }
-      //console.log(`${ingredient} inserted`);
-      var sql = `INSERT INTO ingredients(title, ingredient) VALUES ('` + title + `', '`+ ingredient +`');`;
-      connection.query(sql, function (err, result) {
-        if (err) throw err;
-      });
       s+= ingredient;
     }
     return s;
@@ -267,9 +252,9 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   //let options = createFoodOptionsRecipe(food, appReq.params.rId);
   console.log("######################################################");
   console.log();
-//  let options = createFoodOptionsRecipe(food, appReq.params.rId);
+  let options = createFoodOptionsRecipe(food, appReq.params.rId);
 
-  let options = createAnalysisOptions(edamam);
+  //let options = createAnalysisOptions(edamam);
 
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
