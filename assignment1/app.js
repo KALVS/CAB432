@@ -1,10 +1,13 @@
 const express = require('express');
+const request = require('request');
 const app = express();
 const https = require('https');
 const url = require('url');
 const hostname = '127.0.0.1';
 const port = 3000;
 const mysql = require('mysql');
+
+
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -39,11 +42,6 @@ app.get('/', function(appReq, appRes) {
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 app.get('/:query', function (appReq, appRes) {
 
-  let food = {
-    api_key: "e2301a166e60cb45ed5b6e8f1e0cf353",
-    nojsoncallback: 1
-  };
-
   function connectDropCreate() {
     connection.query("DROP TABLE ingredients");
     var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
@@ -53,34 +51,24 @@ app.get('/:query', function (appReq, appRes) {
     });
   }
 
+  let food = {
+    api_key: "166172843a9c66b94384ee8c4c139402",
+    nojsoncallback: 1
+  };
+
+
   function createFoodOptionsSearch(food, query) {
     let options = {
       hostname: 'www.food2fork.com',
       port: 443,
       path:`/api/search?`,
-      ///https://www.food2fork.com/api/search?key=e2301a166e60cb45ed5b6e8f1e0cf353&q=potato
-      //https://www.food2fork.com/api/search?key=e2301a166e60cb45ed5b6e8f1e0cf353&q=potato
       method: 'GET'
     }
     let str = `key=${food.api_key}` +
     `&q=${query}`;
-
     options.path += str;
+    console.log(options);
     return options;
-  }
-
-  //http://food2fork.com/api/get?key=314d3d963539dc5403f5328dbde78dbe&rId=47320
-
-  function createFoodOptionsRecipe(food, rId) {
-    let options = {
-      hostname: 'www.food2fork.com',
-      port: 443,
-      path:
-      `/api/get?`,
-      //   /get?key=314d3d963539dc5403f5328dbde78dbe&rId=47320
-      method: 'GET',
-      rId: rId
-    }
   }
 
   function parseFoodRspSearch(rsp) {
@@ -108,7 +96,7 @@ app.get('/:query', function (appReq, appRes) {
     return str;
   }
 
-  let options = createFoodOptionsSearch(food, appReq.params.query);
+  let options = createFoodOptionsSearch(food, appReq.params.query, 1);
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
     console.log("headers: ", foodRes.headers);
@@ -138,26 +126,35 @@ app.get('/:query', function (appReq, appRes) {
 
 
 });
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 app.get('/analysis/:rId', function (appReq, appRes) {
 
+  function connectDropCreate() {
+    connection.query("DROP TABLE ingredients");
+    var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
+    connection.query(sql, function (err, result) {
+      if (err) throw err;
+      console.log("Table created");
+    });
+  }
+
   let food = {
-    api_key: "e2301a166e60cb45ed5b6e8f1e0cf353",
+    api_key: "166172843a9c66b94384ee8c4c139402",
+    nojsoncallback: 1
   };
 
   let edamam = {
-    app_key: "ee834218f4b56573e04e75950e0dd195",
-    app_id: "ac7b4c28",
+    app_key: "37632708fbab1c1875f561723c3e875c",
+    app_id: "3c6c2dbe",
     //method: GET
   };
 
-  function createfoodOptionsSearch(food, query) {
+
+  function createfoodOptionsSearch(food, query, page) {
     let options = {
-      hostname: 'food2fork.com',
+      hostname: 'www.food2fork.com',
       port: 443,
       path:`/api/search?`,
-      //   search?key=314d3d963539dc5403f5328dbde78dbe&q=shredded%20chicken`,
       method: 'GET'
     }
     let str = `key=${food.api_key}` +
@@ -177,22 +174,11 @@ app.get('/analysis/:rId', function (appReq, appRes) {
     }
     let str = `key=${food.api_key}` +
     `&rId=${appReq.params.rId}`//${appReq.params.query}`;
-
     options.path += str;
     return options;
-
   }
 
-  function connectDropCreate() {
-    connection.query("DROP TABLE ingredients");
-    var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
-    connection.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("Table created");
-    });
-  }
-
-  function createAnalysisOptions(edamam) {
+  function createAnalysisOptions(edamam, ingredients) {
     let options = {
       hostname: `api.edamam.com`,
       port: 443,
@@ -201,21 +187,12 @@ app.get('/analysis/:rId', function (appReq, appRes) {
       method: 'GET'
     }
     let str = `app_id=${edamam.app_id}` + `&app_key=${edamam.app_key}&ingr=`;
-    //6+frozen+skinless%2C+boneless+chicken+breast`;
-    //let query = connection.query("SELECT ingredient FROM ingredients;");
+    //for (var i = 0; i < ingredients.length; i++) {
+    //  str += ingredients[i] + '%20';
+    //}
     options.path += str;
     return options;
   }
-
-  //
-
-
-  //https://api.edamam.com/api/nutrition-data?app_id=ac7b4c28&app_key=ee834218f4b56
-  //573e04e75950e0dd195&ingr=6+frozen+skinless%2C+boneless+chicken+breast+halves+1+%28
-  //12+ounce%29+bottle+barbeque+sauce+1%2F2+cup+Italian+salad+dressing+1%2F4+cup+brown+sugar
-  //+2+tablespoons+Worcestershire+sauce&serving=1
-  //https://api.edamam.com/api/nutrition-data?app_id=ac7b4c28&app_key=ee834218f4b56573e04e75950e0dd195&ingr=1%20large%20apple
-
 
   function parseFoodRspRecipe(rsp) {
     let ingredients = rsp.recipe.ingredients;
@@ -231,16 +208,62 @@ app.get('/analysis/:rId', function (appReq, appRes) {
     let ingredients = rsp.recipe.ingredients;
     let title = rsp.recipe.title;
     let s = '';
+    connection.query('USE mydb');
     for (ingredient of ingredients) {
+      ingAr = [];
+      ingAr = ingredient;
+      console.log(ingAr);
+      for (var i = 0; i < ingAr.length; i++) {
+        console.log(ingAr[i]);
+        if (ingAr[i] == ','){
+          console.log("###A###");
+        }
+      }
+      //console.log(`${ingredient} inserted`);
+      //var sql = `INSERT INTO ingredients(title, ingredient) VALUES ('` + title + `', '`+ ingredient +`');`;
+      connection.query(sql, function (err, result) {
+        if (err) throw err;
+      });
       s+= ingredient;
     }
     return s;
   }
 
+  const getIng = async function(edamam, rsp) {
+    console.log('getIng start');
+    var ingredients = rsp.recipe.ingredients;
+    for (var i = 0; i < ingredients.length; i++) {
+      var ingredient = ingredients[i];
+      for (var j = 0; j < ingredient.length; j++) {
+        if (ingredient[j] === ',' || ingredient[j] === '(') {
+          ingredients[i] = ingredient.slice(0, j);
+        }
+      }
+      console.log(ingredients[i]);
+      console.log('getIng end');
+    }
+
+    //let options = createAnalysisOptions(edamam, ingredients);
+    var edamURL = `https://api.edamam.com/api/nutrition-data?app_id=${edamam.app_id}&app_key=${edamam.app_key}&ingr=`;
+    for (ingredient of ingredients) {
+      edamURL += ingredient;
+    }
+    var edamURLencode = encodeURI(edamURL);
+    console.log("EDAMAM URI");
+    console.log(edamURLencode);
+    request(edamURLencode, function (error, response, body) {
+      console.log('error:', error); // Print the error if one occurred
+      console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+      console.log("####DATA####");
+      console.log('body:', body); // Print the HTML for the Google homepage.
+
+    });
+  }
+
   function createPage(title, rsp) {
     let number = rsp.count;
     //let imageString = parseFoodRspSearch(rsp);
-    let imageString = parseAnalysisRsp(rsp);
+    let imageString = parseFoodRspRecipe(rsp);
     let str = '<html><head><title>Food JSON</title></head>' + '<body>' +
     `<h1>${title}</h1>` +
     `Total number of entries is: ${number}</br>${imageString}` +
@@ -250,11 +273,14 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   //https://api.edamam.com/api/nutrition-data?app_id=ac7b4c28&app_key=ee834218f4b56573e04e75950e0dd195&ingr=1%20large%20apple%22
   //let options = createFoodOptionsSearch(food, appReq.query['query']);
   //let options = createFoodOptionsRecipe(food, appReq.params.rId);
-  console.log("######################################################");
+  console.log("############################START##########################");
   console.log();
   let options = createFoodOptionsRecipe(food, appReq.params.rId);
 
-  //let options = createAnalysisOptions(edamam);
+  //let options = createFoodOptionsRecipe(edamam);
+
+//https://api.edamam.com/search?q=chicken&app_id=${YOUR_APP_ID}&app_key=${YOUR_APP_KEY}&from=0&to=3&calories=591-722&health=alcohol-free"
+url=
 
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
@@ -270,6 +296,8 @@ app.get('/analysis/:rId', function (appReq, appRes) {
       'text/html'});
       let bodyString = body.join('');
       let rsp = JSON.parse(bodyString);
+
+      getIng(edamam, rsp);
 
       let s = createPage("analysis", rsp);
         appRes.write(s);
