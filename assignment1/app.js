@@ -39,6 +39,11 @@ app.get('/', function(appReq, appRes) {
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 app.get('/:query', function (appReq, appRes) {
 
+  let food = {
+    api_key: "314d3d963539dc5403f5328dbde78dbe",
+    nojsoncallback: 1
+  };
+
   function connectDropCreate() {
     connection.query("DROP TABLE ingredients");
     var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
@@ -48,24 +53,34 @@ app.get('/:query', function (appReq, appRes) {
     });
   }
 
-  let food = {
-    api_key: "314d3d963539dc5403f5328dbde78dbe",
-    nojsoncallback: 1
-  };
-
-
   function createFoodOptionsSearch(food, query) {
     let options = {
       hostname: 'food2fork.com',
       port: 443,
       path:`/api/search?`,
+      //   search?key=314d3d963539dc5403f5328dbde78dbe&q=shredded%20chicken`,
       method: 'GET'
     }
-    let str = `key=${food.api_key}` + `&q=${query}`;
+    let str = `key=${food.api_key}` +
+    `&q=${query}`;
+
     options.path += str;
     return options;
   }
 
+  //http://food2fork.com/api/get?key=314d3d963539dc5403f5328dbde78dbe&rId=47320
+
+  function createFoodOptionsRecipe(food, rId) {
+    let options = {
+      hostname: 'food2fork.com',
+      port: 443,
+      path:
+      `/api/get?`,
+      //   /get?key=314d3d963539dc5403f5328dbde78dbe&rId=47320
+      method: 'GET',
+      rId: rId
+    }
+  }
 
   function parseFoodRspSearch(rsp) {
     let s = "";
@@ -126,15 +141,6 @@ app.get('/:query', function (appReq, appRes) {
 
 app.get('/analysis/:rId', function (appReq, appRes) {
 
-  function connectDropCreate() {
-    connection.query("DROP TABLE ingredients");
-    var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
-    connection.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("Table created");
-    });
-  }
-
   let food = {
     api_key: "314d3d963539dc5403f5328dbde78dbe",
     nojsoncallback: 1
@@ -174,6 +180,16 @@ app.get('/analysis/:rId', function (appReq, appRes) {
 
     options.path += str;
     return options;
+
+  }
+
+  function connectDropCreate() {
+    connection.query("DROP TABLE ingredients");
+    var sql = "CREATE TABLE ingredients (title VARCHAR(255), ingredient VARCHAR(255))";
+    connection.query(sql, function (err, result) {
+      if (err) throw err;
+      console.log("Table created");
+    });
   }
 
   function createAnalysisOptions(edamam) {
@@ -219,11 +235,11 @@ app.get('/analysis/:rId', function (appReq, appRes) {
     for (ingredient of ingredients) {
       ingAr = [];
       ingAr = ingredient;
-      console.log(ingAr);
+      //console.log(ingAr);
       for (var i = 0; i < ingAr.length; i++) {
-        console.log(ingAr[i]);
+        //console.log(ingAr[i]);
         if (ingAr[i] == ','){
-          console.log("###A###");
+          //console.log("###A###");
         }
       }
       //console.log(`${ingredient} inserted`);
@@ -239,7 +255,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   function createPage(title, rsp) {
     let number = rsp.count;
     //let imageString = parseFoodRspSearch(rsp);
-    let imageString = parseFoodRspRecipe(rsp);
+    let imageString = parseAnalysisRsp(rsp);
     let str = '<html><head><title>Food JSON</title></head>' + '<body>' +
     `<h1>${title}</h1>` +
     `Total number of entries is: ${number}</br>${imageString}` +
@@ -251,9 +267,9 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   //let options = createFoodOptionsRecipe(food, appReq.params.rId);
   console.log("######################################################");
   console.log();
-  let options = createFoodOptionsRecipe(food, appReq.params.rId);
+//  let options = createFoodOptionsRecipe(food, appReq.params.rId);
 
-  //let options = createFoodOptionsRecipe(edamam);
+  let options = createAnalysisOptions(edamam);
 
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
@@ -268,7 +284,6 @@ app.get('/analysis/:rId', function (appReq, appRes) {
       appRes.writeHead(foodRes.statusCode, {'content-type':
       'text/html'});
       let bodyString = body.join('');
-      console.log(bodyString);
       let rsp = JSON.parse(bodyString);
 
       let s = createPage("analysis", rsp);
