@@ -52,7 +52,7 @@ app.get('/:query', function (appReq, appRes) {
   }
 
   let food = {
-    api_key: "166172843a9c66b94384ee8c4c139402",
+    api_key: "b82436d57b3793a30073c98efe68daca",
     nojsoncallback: 1
   };
 
@@ -139,14 +139,15 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   }
 
   let food = {
-    api_key: "166172843a9c66b94384ee8c4c139402",
+    api_key: "b82436d57b3793a30073c98efe68daca",
     nojsoncallback: 1
   };
 
   let edamam = {
-    app_key: "37632708fbab1c1875f561723c3e875c",
-    app_id: "3c6c2dbe",
-    //method: GET
+    app_key: '94271fc667d95d0240640d96d0527c5c',
+    app_id: "b3684a31"
+//    app_key: "37632708fbab1c1875f561723c3e875c",
+//    app_id: "3c6c2dbe",
   };
 
 
@@ -231,7 +232,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
 
   const getIng = async function(edamam, rsp) {
     console.log('getIng start');
-    var ingredients = rsp.recipe.ingredients;
+    /*var ingredients = rsp.recipe.ingredients;
     for (var i = 0; i < ingredients.length; i++) {
       var ingredient = ingredients[i];
       for (var j = 0; j < ingredient.length; j++) {
@@ -239,24 +240,25 @@ app.get('/analysis/:rId', function (appReq, appRes) {
           ingredients[i] = ingredient.slice(0, j);
         }
       }
-      console.log(ingredients[i]);
+      console.log(ingredients[i]);*/
+      recipe_title = rsp.recipe.title;
       console.log('getIng end');
-    }
 
     //let options = createAnalysisOptions(edamam, ingredients);
-    var edamURL = `https://api.edamam.com/api/nutrition-data?app_id=${edamam.app_id}&app_key=${edamam.app_key}&ingr=`;
-    for (ingredient of ingredients) {
+    var edamRURL = `https://api.edamam.com/search?q=${recipe_title}&app_id=${edamam.app_id}&app_key=${edamam.app_key}`
+    //var edamURL = `https://api.edamam.com/api/nutrition-data?app_id=${edamam.app_id}&app_key=${edamam.app_key}&title=${recipe_title}`;
+    /*for (ingredient of ingredients) {
       edamURL += ingredient;
-    }
-    var edamURLencode = encodeURI(edamURL);
-    console.log("EDAMAM URI");
-    console.log(edamURLencode);
+    }*/
+    var edamURLencode = encodeURI(edamRURL);
+
     request(edamURLencode, function (error, response, body) {
       console.log('error:', error); // Print the error if one occurred
       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       console.log("####DATA####");
-      console.log('body:', body); // Print the HTML for the Google homepage.
-
+      let myArr = [];
+      myArr = JSON.parse(body);
+      console.log(myArr.hits[1].recipe);
     });
   }
 
@@ -280,7 +282,7 @@ app.get('/analysis/:rId', function (appReq, appRes) {
   //let options = createFoodOptionsRecipe(edamam);
 
 //https://api.edamam.com/search?q=chicken&app_id=${YOUR_APP_ID}&app_key=${YOUR_APP_KEY}&from=0&to=3&calories=591-722&health=alcohol-free"
-url=
+//url=
 
   let foodReq = https.request(options, function(foodRes) {
     console.log("statusCode: ", foodRes.statusCode);
