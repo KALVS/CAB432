@@ -6,7 +6,7 @@ const Recipe = require(__dirname + `/../models/recipe.model`);
 const config = require(__dirname + '/../config.js');
 
 const food = {
-  api_key: '430832d5f0a483c20b2a45827d82b177',
+  api_key: 'a23d6f58e8bf92249bac4c743b26364f',
   nojsoncallback: 1
 }
 
@@ -25,9 +25,9 @@ function searchForRecipe(food, query, callback) {
   try {
     console.log('food START');
     request(foodURL, function(error, response, body) {
-      //console.log('error:', error); //Print error if error
-      //console.log('statusCode:', response && response.statusCode); //Print response status incase it doesnt work
-      //console.log("SEARCH DATA")
+      console.log('error:', error); //Print error if error
+      console.log('statusCode:', response && response.statusCode); //Print response status incase it doesnt work
+      console.log("SEARCH DATA")
       rsp = JSON.parse(body);
 //check out maps
       for (var i = 0; i < 3; i++) {
@@ -40,15 +40,14 @@ function searchForRecipe(food, query, callback) {
           yield: '',
           recipeImg: rsp.recipes[i].image_url,
           ingredients: '',
-          totalDaily: '',
+          energy: '',
+          fat: '',
+          carbs: '',
+          protein: '',
+          source_URL: rsp.recipes[i].source_url,
         }
         recipes[i] = recipe;
-        //foodTitle.push(cleanTitle);
-
-        //console.log("search for recipe: ", cleanTitle);
-        //console.log(foodTitle[i]);
       }
-      //console.log('food END');
       callback(recipes);
     });
   } catch (err) {
@@ -61,7 +60,7 @@ const edamam = {
   app_id: 'b3684a31'
 }
 
-function getRecipe(edamam, recipes) {
+function getRecipe(edamam, recipes, callback) {
 
   let tmpTitles= [];
   let tmpIngre = [];
@@ -83,14 +82,19 @@ function getRecipe(edamam, recipes) {
       console.log("RSP START #",j);
       recipes[j].ingredients = rsp.hits[j].recipe.ingredientLines;
       recipes[j].yield = rsp.hits[j].recipe.yield;
-      recipes[j].totalDaily = rsp.hits[j].recipe.totalDaily;
-
-      console.log(recipes[j]);
+      recipes[j].energy = rsp.hits[j].recipe.totalDaily.ENERC_KCAL.quantity/recipes[j].yield;
+      recipes[j].fat = rsp.hits[j].recipe.totalDaily.FAT.quantity/recipes[j].yield;
+      recipes[j].carbs = rsp.hits[j].recipe.totalDaily.CHOCDF.quantity/recipes[j].yield;
+      recipes[j].protein = rsp.hits[j].recipe.totalDaily.PROCNT.quantity/recipes[j].yield;
+      //console.log(recipes[j]);
       j++;
-      console.log('RSP end \n getRecipe end');
+      console.log('RSP end');
+      callback(recipes);
     });
+
+    console.log("getRecipe has ended");
   }
-  console.log(tmpIngre);
+  return recipes;
 }
 /*} catch (err) {
   console.log('error in edamam:', err);
@@ -114,14 +118,16 @@ router.get('/', function(req, res, next) {
     query = JSON.stringify(req.query.Search);
     searchForRecipe(food, query, function(recipes){
       if (recipes) {
-        getRecipe(edamam, recipes);
+        getRecipe(edamam, recipes, function(recipes) {
+          console.log('its fucking working!!!!');
+        });
       } else {
         console.log("failure to get foodtitle");
       }
     });
 //    console.log(content);
 console.log(cardInfo);
-    res.render('index',{ title: "You've searched for: " + query, CardTitle: "CardTitle", });
+    res.render('index',{ title: "You've searched for: " + query, CardTitle: "Card hello", });
   }
 });
 
