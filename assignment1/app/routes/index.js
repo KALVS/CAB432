@@ -37,9 +37,10 @@ function searchForRecipe(food, query, callback) {
         cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
         let recipe = {
           title: cleanTitle,
+          yield: '',
           recipeImg: rsp.recipes[i].image_url,
           ingredients: '',
-          analysis: ''
+          totalDaily: '',
         }
         recipes[i] = recipe;
         //foodTitle.push(cleanTitle);
@@ -80,11 +81,11 @@ function getRecipe(edamam, recipes) {
       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       rsp = JSON.parse(body);
       console.log("RSP START #",j);
-      console.log('foodTitle: ', tmpTitles[j]);
-      tmpIngre =
       recipes[j].ingredients = rsp.hits[j].recipe.ingredientLines;
+      recipes[j].yield = rsp.hits[j].recipe.yield;
+      recipes[j].totalDaily = rsp.hits[j].recipe.totalDaily;
+
       console.log(recipes[j]);
-      console.log("tmpIngre= ", tmpIngre);
       j++;
       console.log('RSP end \n getRecipe end');
     });
