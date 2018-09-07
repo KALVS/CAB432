@@ -6,22 +6,16 @@ block content
   p To begin, simply enter an ingredient or recipe
   form(action="/")
     p Search:
-    input(
-      type='text',
-      name='Search',
-      )
-    input(
-      type='submit',
-      value="submit"
-      )
-      
+    input(type='text', name='Search')
+    input(type='submit', value="submit")
+    
       
   .card
     .card-image.waves-effect.waves-block.waves-light
       img.activator(src='images/office.jpg')
     .card-content
       span.card-title.activator.grey-text.text-darken-4
-        | Card Title
+        CardTitle= CardTitle
         i.material-icons.right Analysis
       p
         a(href='#') This is a link
@@ -31,5 +25,3 @@ block content
         i.material-icons.right close
       p
         | Here is some more information about this product that is only revealed once clicked on.
-
-    p= cardtitle

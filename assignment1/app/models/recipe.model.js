@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 recipeSchema = new Schema( {
   recipeTitle: {type: String},
   ingredients: { type: Array, of: String, default: null },
+  
   //nutrition: {type: Array, of: Arrays, default: null }
 });
 // Construct and Export the Model.

@@ -6,7 +6,7 @@ const Recipe = require(__dirname + `/../models/recipe.model`);
 const config = require(__dirname + '/../config.js');
 
 const food = {
-  api_key: '24542be1f84cd101eb14826707d17071',
+  api_key: '430832d5f0a483c20b2a45827d82b177',
   nojsoncallback: 1
 }
 
@@ -21,7 +21,7 @@ function searchForRecipe(food, query, callback) {
   foodRawURL = cleanString(foodRawURL, /&#8217;/g, '');
   let foodURL = encodeURI(foodRawURL);
   let rsp;
-  let foodTitle = [];
+  let recipes = [];
   try {
     console.log('food START');
     request(foodURL, function(error, response, body) {
@@ -29,19 +29,26 @@ function searchForRecipe(food, query, callback) {
       //console.log('statusCode:', response && response.statusCode); //Print response status incase it doesnt work
       //console.log("SEARCH DATA")
       rsp = JSON.parse(body);
-
-      for (var i = 0; i < 4; i++) {
+//check out maps
+      for (var i = 0; i < 3; i++) {
         let dirtyTitle = rsp.recipes[i].title;
         dirtyTitle = decodeURI(dirtyTitle);
         cleanTitle = cleanString(dirtyTitle, /’/g, '');
         cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
+        let recipe = {
+          title: cleanTitle,
+          recipeImg: rsp.recipes[i].image_url,
+          ingredients: '',
+          analysis: ''
+        }
+        recipes[i] = recipe;
+        //foodTitle.push(cleanTitle);
 
-        foodTitle.push(cleanTitle);
-        console.log("search for recipe: ", cleanTitle);
+        //console.log("search for recipe: ", cleanTitle);
         //console.log(foodTitle[i]);
       }
       //console.log('food END');
-      callback(foodTitle);
+      callback(recipes);
     });
   } catch (err) {
     console.log("error: ", err);
@@ -53,34 +60,37 @@ const edamam = {
   app_id: 'b3684a31'
 }
 
-function getRecipe(edamam, foodTitle) {
-      let titleList = [];
-      for (title of foodTitle) {
-        console.log(title);
-        titleList.push(title);
-      }
-      //Just use one for now
-      //Get title, and image in the page for now
+function getRecipe(edamam, recipes) {
 
-      var edamRawURL = `https://api.edamam.com/search?q=${titleList[0]}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c`
-      edamRawURL = cleanString(edamRawURL, /’/g, '');
-      var edamURL = encodeURI(edamRawURL);
-      let rsp;
-
-    request(edamURL, cleanTitle ,function (error, response, body) {
+  let tmpTitles= [];
+  let tmpIngre = [];
+  for (var i = 0; i < recipes.length; i++) {
+    console.log("recipes "+[i]+" title", recipes[i].title);
+    tmpTitles.push(recipes[i].title);
+  }
+  let j = 0
+  for (title of tmpTitles) {
+    var edamRawURL = `https://api.edamam.com/search?q=${tmpTitles[j]}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c`
+    edamRawURL = cleanString(edamRawURL, /’/g, '');
+    var edamURL = encodeURI(edamRawURL);
+    let rsp;
+    request(edamURL, function (error, response, body) {
       console.log('getRecipe start');
-      console.log('foodTitle: ', cleanTitle);
       console.log('error:', error); // Print the error if one occurred
       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       rsp = JSON.parse(body);
-      console.log("RSP START");
-      //tmpIngre = rsp.hits[j].recipe.ingredientlines;
-      //console.log(rsp.hits[0]);
-      console.log(rsp.hits[0].recipe.ingredientlines);
-
+      console.log("RSP START #",j);
+      console.log('foodTitle: ', tmpTitles[j]);
+      tmpIngre =
+      recipes[j].ingredients = rsp.hits[j].recipe.ingredientLines;
+      console.log(recipes[j]);
+      console.log("tmpIngre= ", tmpIngre);
+      j++;
       console.log('RSP end \n getRecipe end');
     });
   }
+  console.log(tmpIngre);
+}
 /*} catch (err) {
   console.log('error in edamam:', err);
 }*/
@@ -96,20 +106,21 @@ getRecipe(edamam, titles);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  let cardInfo;
+  let cardInfo = [];
   if(!req.query.Search) {
     res.render('index', {title: 'Welcome to Mindful Meals'});
   } else if (req.query.Search) {
     query = JSON.stringify(req.query.Search);
-    searchForRecipe(food, query, function(foodTitle){
-      if (foodTitle) {
-        getRecipe(edamam, foodTitle);
+    searchForRecipe(food, query, function(recipes){
+      if (recipes) {
+        getRecipe(edamam, recipes);
       } else {
         console.log("failure to get foodtitle");
       }
     });
 //    console.log(content);
-    res.render('index',{ title: "You've searched for: " + query });
+console.log(cardInfo);
+    res.render('index',{ title: "You've searched for: " + query, CardTitle: "CardTitle", });
   }
 });
 
