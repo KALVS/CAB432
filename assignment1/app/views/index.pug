@@ -8,20 +8,21 @@ block content
     p Search:
     input(type='text', name='Search')
     input(type='submit', value="submit")
-    
+  each val in recipes2
+    .card
+      .card-image.waves-effect.waves-block.waves-light
+        img.activator(src=val.recipeImg)
+      .card-content
+        span.card-title.activator.grey-text.text-darken-4
+          CardTitle= val.title
+          i.material-icons.right See Analysis
+        p
+          a(href=val.source_URL) View Source
+          p= val.ingredient
+      .card-reveal
+        span.card-title.grey-text.text-darken-4
+          h5= val.title
+          for ing in recipes2.ingredients
+            p ing
+          i.material-icons.right close
       
-  .card
-    .card-image.waves-effect.waves-block.waves-light
-      img.activator(src='images/office.jpg')
-    .card-content
-      span.card-title.activator.grey-text.text-darken-4
-        CardTitle= CardTitle
-        i.material-icons.right Analysis
-      p
-        a(href='#') This is a link
-    .card-reveal
-      span.card-title.grey-text.text-darken-4
-        | Card Title
-        i.material-icons.right close
-      p
-        | Here is some more information about this product that is only revealed once clicked on.
