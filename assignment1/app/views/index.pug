@@ -11,7 +11,6 @@ block content
   
   if recipes
     h5 Results:
-    p= recipes
     each val in recipes
       .card
         .card-image.waves-effect.waves-block.waves-light
@@ -22,11 +21,11 @@ block content
             i.material-icons.right See Analysis
           p
             a(href=val.source_URL) View Source
-            p= val.ingredient
         .card-reveal
           span.card-title.grey-text.text-darken-4
             h5= val.title
-              p ing
+            each ingredient in val.ingredients
+              li= ingredient
             i.material-icons.right close
 
       
