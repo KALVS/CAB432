@@ -61,12 +61,14 @@ async function getRecipe(edamam, recipe) {
   var edamURL = encodeURI(edamRawURL);
   let rsp;
   let title = recipe.title;
+  let title_div = cleanString(title,/ /g, '');
   return new Promise(resolve => {
     request(edamURL, function (error, response, body) {
       console.log('getRecipe start');
       console.log('error:', error); // Print the error if one occurred
       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       rsp = JSON.parse(body);
+      console.log(rsp);
       try {
         recipe = {
           title: title,
@@ -78,6 +80,7 @@ async function getRecipe(edamam, recipe) {
           fat : rsp.hits[0].recipe.totalDaily.FAT.quantity/rsp.hits[0].recipe.yield,
           carbs : rsp.hits[0].recipe.totalDaily.CHOCDF.quantity/rsp.hits[0].recipe.yield,
           protein : rsp.hits[0].recipe.totalDaily.PROCNT.quantity/rsp.hits[0].recipe.yield,
+          chart_div: title_div + '_div'
         }
         console.log("Nrecipe= ",recipe);
 
@@ -91,13 +94,13 @@ async function getRecipe(edamam, recipe) {
 
 async function processArray(edamam, recipes) {
   let newArr = [];
-  console.log("processArray recipes",recipes);
+  //console.log("processArray recipes",recipes);
   for (var i = 0; i < recipes.length; i++) {
-    let recipe = recipes[i]
-    console.log("recipes[i]", recipe);
+    let recipe = recipes[i];
     newArr[i] =  await getRecipe(edamam, recipe);
+
   }
-  console.log("newArr", newArr);
+  //console.log("newArr", newArr);
   return newArr;
 }
 
@@ -112,6 +115,7 @@ router.post('/', async function(req, res, next) {
   console.log("first val", first);
   const second = await processArray(edamam, first);
   console.log("second in post", second);
+  //graph = second(google);
   res.render('index', {title: "You've searched for: " + query, recipes: second});
   });
 //});

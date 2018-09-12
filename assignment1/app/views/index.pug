@@ -23,9 +23,39 @@ block content
             a(href=val.source_URL) View Source
         .card-reveal
           span.card-title.grey-text.text-darken-4
+            
             h5= val.title
+            | <div id=#{val.chart_div}> </div> 
             each ingredient in val.ingredients
               li= ingredient
             i.material-icons.right close
+
+  script(type='text/javascript').
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      
+      let recipes = !{JSON.stringify(recipes)};
+      recipes.forEach( function (recipe) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Nutrient');
+        data.addColumn('number', 'RDI %');
+        data.addRows([
+        ['Energy', recipe.energy],
+        ['Fat', recipe.fat],
+        ['Carbs', recipe.carbs],
+        ['Protein', recipe.protein]
+        ]);
+
+      
+        var options = {'title': recipe.title,
+        'width':500,
+        'height':300};
+        var chart = recipe.chart_div;
+        chart = new google.visualization.BarChart(document.getElementById(recipe.chart_div));
+        chart.draw(data, options);
+        });
+      }
 
       

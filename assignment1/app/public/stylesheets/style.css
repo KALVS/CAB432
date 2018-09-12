@@ -1,5 +1,5 @@
 body {
-  padding: 25%;
+  padding: 10%;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -9,4 +9,10 @@ li{
 
 a {
   color: #00B7FF;
+}
+
+#chart_div {
+    background-color: #00B7FF;
+    width: 700px;
+    height: 240px;
 }
