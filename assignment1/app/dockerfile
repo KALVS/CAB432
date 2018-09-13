@@ -1,0 +1,13 @@
+FROM node:carbon
+
+WORKDIR /Users/macboiiii/Documents/GitHub/CAB432/assignment1/app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY . .
+
+EXPOSE 8080
+
+CMD ["npm", "start"]

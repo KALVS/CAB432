@@ -62,13 +62,12 @@ async function getRecipe(edamam, recipe) {
   let rsp;
   let title = recipe.title;
   let title_div = cleanString(title,/ /g, '');
-  return new Promise(resolve => {
+  return new Promise(resolve, reject => {
     request(edamURL, function (error, response, body) {
       console.log('getRecipe start');
       console.log('error:', error); // Print the error if one occurred
       console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
       rsp = JSON.parse(body);
-      console.log(rsp);
       try {
         recipe = {
           title: title,
