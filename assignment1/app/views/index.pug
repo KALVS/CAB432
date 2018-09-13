@@ -8,6 +8,9 @@ block content
     p Search:
     input(type='text', name='Search')
     input(type='submit', value="submit")
+      
+  p Two of the three APIs are delicate
+  p One API only allows for 5 calls per minute, and the other only allows 50 calls per account.
   
   if recipes
     h5 Results:
@@ -25,9 +28,10 @@ block content
           span.card-title.grey-text.text-darken-4
             
             h5= val.title
-            | <div id=#{val.chart_div}> </div> 
-            each ingredient in val.ingredients
-              li= ingredient
+            | <div id=#{val.chart_div}> </div>
+            if val.ingredients 
+              each ingredient in val.ingredients
+                li= ingredient
             i.material-icons.right close
 
   script(type='text/javascript').
@@ -35,27 +39,28 @@ block content
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
-      
       let recipes = !{JSON.stringify(recipes)};
-      recipes.forEach( function (recipe) {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Nutrient');
-        data.addColumn('number', 'RDI %');
-        data.addRows([
-        ['Energy', recipe.energy],
-        ['Fat', recipe.fat],
-        ['Carbs', recipe.carbs],
-        ['Protein', recipe.protein]
-        ]);
+      if (recipes.length > 0 ){
+        recipes.forEach( function (recipe) {
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Nutrient');
+          data.addColumn('number', 'RDI %');
+          data.addRows([
+          ['Energy', recipe.energy],
+          ['Fat', recipe.fat],
+          ['Carbs', recipe.carbs],
+          ['Protein', recipe.protein]
+          ]);
 
-      
-        var options = {'title': recipe.title,
-        'width':500,
-        'height':300};
-        var chart = recipe.chart_div;
-        chart = new google.visualization.BarChart(document.getElementById(recipe.chart_div));
-        chart.draw(data, options);
-        });
+        
+          var options = {'title': recipe.title,
+          'width':500,
+          'height':300};
+          var chart = recipe.chart_div;
+          chart = new google.visualization.BarChart(document.getElementById(recipe.chart_div));
+          chart.draw(data, options);
+          });
+        }
       }
 
       

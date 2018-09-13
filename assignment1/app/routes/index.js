@@ -3,20 +3,22 @@ var router = express.Router();
 var request = require('request-promise');
 
 const Recipe = require(__dirname + `/../models/recipe.model`);
-const config = require(__dirname + '/../config.js');
+const Config = require(__dirname + '/../config.js');
 
 const food = {
-  api_key: '16588e72a33a4b5a609959e1da609c4b',
+  api_key: '2bed439467a758c35fb966651013b10f',
   nojsoncallback: 1
 }
-
+//This is dumb but was a good idea at the time
 function cleanString(str, dirtyChar, cleanChar) {
   result = str.replace(dirtyChar, cleanChar);
   return result;
 }
-
-
-
+//Creates an Array of Recipes, puts that into a URL that needs some cleaning
+//Then returns a promise of the recipes
+//If it rejects, we go to a 404 with a reason.
+//This API has 50 calls. Use them wisely please. Or just make a fake account
+//
 async function searchForRecipe(food, query) {
   let recipes = [];
   let foodRawURL = `https://www.food2fork.com/api/search?key=${food.api_key}` +
@@ -28,23 +30,32 @@ async function searchForRecipe(food, query) {
     console.log('food START');
     request(foodURL, function(error, response, body) {
       if (error) {
-        console.log("error : ", error);
-        return error;
+        console.log(error);
       }
       console.log('statusCode:', response && response.statusCode); //Print response status incase it doesnt work
       rsp = JSON.parse(body);
-      for (var i = 0; i < 3; i++) {
-        let dirtyTitle = rsp.recipes[i].title;
-        dirtyTitle = decodeURI(dirtyTitle);
-        let cleanTitle = cleanString(dirtyTitle, /’/g, '');
-        cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
-        let recipe = {
-          title: cleanTitle
+      if (rsp.count > 0) {
+        for (var i = 0; i < 3; i++) {
+          let dirtyTitle = rsp.recipes[i].title;
+          dirtyTitle = decodeURI(dirtyTitle);
+          let cleanTitle = cleanString(dirtyTitle, /’/g, '');
+          cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
+          let recipe = {
+            title: cleanTitle,
+            recipeImg: rsp.recipes[i].image_url,
+            source_URL : rsp.recipes[i].source_url
+          }
+          recipes[i] = recipe;
         }
-        recipes[i] = recipe;
+      } else {
+        //for (var i = 0; i < 3; i++) {
+          let recipe = {
+            title: "NULL"
+          }
+          recipes.push(recipe);
+        //}
       }
       resolve(recipes);
-      //console.log("About to return: ",recipes);
     });
   });
 }
@@ -53,53 +64,78 @@ const edamam = {
   app_key: '94271fc667d95d0240640d96d0527c5c',
   app_id: 'b3684a31'
 }
-
+//This takes a recipe's title
+//Done a quick check with old mate Edamam and
 async function getRecipe(edamam, recipe) {
-  console.log("The recipe: " + recipe.title);
-  var edamRawURL = `https://api.edamam.com/search?q=${recipe.title}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c`
-  edamRawURL = cleanString(edamRawURL, /’/g, '');
-  var edamURL = encodeURI(edamRawURL);
-  let rsp;
-  let title = recipe.title;
-  let title_div = cleanString(title,/ /g, '');
-  return new Promise(resolve, reject => {
-    request(edamURL, function (error, response, body) {
-      console.log('getRecipe start');
-      console.log('error:', error); // Print the error if one occurred
-      console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-      rsp = JSON.parse(body);
-      try {
-        recipe = {
-          title: title,
-          recipeImg: rsp.hits[0].recipe.image,
-          source_URL : rsp.hits[0].recipe.url,
-          ingredients : rsp.hits[0].recipe.ingredientLines,
-          yield : rsp.hits[0].recipe.yield,
-          energy : rsp.hits[0].recipe.totalDaily.ENERC_KCAL.quantity/rsp.hits[0].recipe.yield,
-          fat : rsp.hits[0].recipe.totalDaily.FAT.quantity/rsp.hits[0].recipe.yield,
-          carbs : rsp.hits[0].recipe.totalDaily.CHOCDF.quantity/rsp.hits[0].recipe.yield,
-          protein : rsp.hits[0].recipe.totalDaily.PROCNT.quantity/rsp.hits[0].recipe.yield,
-          chart_div: title_div + '_div'
-        }
-        console.log("Nrecipe= ",recipe);
+  return new Promise(resolve => {
+    console.log("The recipe: " + recipe.title);
+    if (recipe.title === "NULL") {
+      recipe = {
+      title: "Please refine search parameters",
+      recipeImg: "https://media.giphy.com/media/woxVvsobzJO7u/giphy.gif",
+      source_URL: "NULL",
+      ingredients: ["You", "Didn't", "Say", "The","Magic","Word", "!"],
+      yield: "0",
+      energy: "0",
+      fat: "0",
+      carbs: "0",
+      protein: "0",
+      chart_div: Math.random() + '_div'
+    }
+    resolve(recipe)
+    } else {
+      var edamRawURL = `https://api.edamam.com/search?q=${recipe.title}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c`
+      edamRawURL = cleanString(edamRawURL, /’/g, '');
+      var edamURL = encodeURI(edamRawURL);
+      let rsp;
+      let title = recipe.title;
+      let title_div = cleanString(title,/ /g, '');
+      request(edamURL, function (error, response, body) {
+        console.log('getRecipe start');
+        console.log('error:', error);
+        console.log('statusCode:', response && response.statusCode);
+        rsp = JSON.parse(body);
+        try {
+          recipe = {
+            title: title,
+            ingredients: rsp.hits[0].recipe.ingredientLines,
+            yield: rsp.hits[0].recipe.yield,
+            recipeImg: rsp.hits[0].recipe.image,
+            source_URL: rsp.hits[0].recipe.url,
+            energy: rsp.hits[0].recipe.totalDaily.ENERC_KCAL.quantity/rsp.hits[0].recipe.yield,
+            fat: rsp.hits[0].recipe.totalDaily.FAT.quantity/rsp.hits[0].recipe.yield,
+            carbs: rsp.hits[0].recipe.totalDaily.CHOCDF.quantity/rsp.hits[0].recipe.yield,
+            protein: rsp.hits[0].recipe.totalDaily.PROCNT.quantity/rsp.hits[0].recipe.yield,
+            chart_div: title_div + '_div'
+          }
 
-      } catch (e) {
-        console.log("catch failed in getRecipe \n error:" ,e);
-      }
-      resolve(recipe);
-    });
+        } catch (e) {
+          title = recipe.title;
+          recipeImg = recipe.recipeImg;
+          source_URL = recipe.source_URL;
+          recipe = {
+            title: title,
+            recipeImg: recipeImg,
+            source_URL: source_URL,
+            ingredients: ["Unable to retireve ingredients, please refer to the source URL."]
+          }
+        }
+        resolve(recipe);
+      });
+    }
   });
 }
 
 async function processArray(edamam, recipes) {
   let newArr = [];
-  //console.log("processArray recipes",recipes);
-  for (var i = 0; i < recipes.length; i++) {
-    let recipe = recipes[i];
-    newArr[i] =  await getRecipe(edamam, recipe);
-
+  if (recipes.length > 0) {
+    for (var i = 0; i < recipes.length; i++) {
+      let recipe = recipes[i];
+      newArr[i] =  await getRecipe(edamam, recipe);
+    }
+  }else {
+    newArr = await getRecipe(edamam, recipes);
   }
-  //console.log("newArr", newArr);
   return newArr;
 }
 
@@ -111,10 +147,7 @@ router.get('/', function(req, res, next) {
 router.post('/', async function(req, res, next) {
   let query = req.body.Search;
   const first = await searchForRecipe(food, query);
-  console.log("first val", first);
   const second = await processArray(edamam, first);
-  console.log("second in post", second);
-  //graph = second(google);
   res.render('index', {title: "You've searched for: " + query, recipes: second});
   });
 //});
