@@ -2,9 +2,6 @@ var express = require('express');
 var router = express.Router();
 var request = require('request-promise');
 
-const Recipe = require(__dirname + `/../models/recipe.model`);
-const Config = require(__dirname + '/../config.js');
-
 const food = {
   api_key: '2bed439467a758c35fb966651013b10f',
   nojsoncallback: 1
@@ -36,16 +33,18 @@ async function searchForRecipe(food, query) {
       rsp = JSON.parse(body);
       if (rsp.count > 0) {
         for (var i = 0; i < 3; i++) {
-          let dirtyTitle = rsp.recipes[i].title;
-          dirtyTitle = decodeURI(dirtyTitle);
-          let cleanTitle = cleanString(dirtyTitle, /’/g, '');
-          cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
-          let recipe = {
-            title: cleanTitle,
-            recipeImg: rsp.recipes[i].image_url,
-            source_URL : rsp.recipes[i].source_url
+          if (typeof rsp.recipes[i] !== "undefined"){
+            let dirtyTitle = rsp.recipes[i].title;
+            dirtyTitle = decodeURI(dirtyTitle);
+            let cleanTitle = cleanString(dirtyTitle, /’/g, '');
+            cleanTitle = cleanString(dirtyTitle, /&#8217;/g, '');
+            let recipe = {
+              title: cleanTitle,
+              recipeImg: rsp.recipes[i].image_url,
+              source_URL : rsp.recipes[i].source_url
+            }
+            recipes[i] = recipe;
           }
-          recipes[i] = recipe;
         }
       } else {
         //for (var i = 0; i < 3; i++) {

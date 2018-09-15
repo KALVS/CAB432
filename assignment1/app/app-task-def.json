@@ -1,0 +1,23 @@
+{
+    "family": "app",
+    "containerDefinitions": [
+        {
+            "name": "app",
+            "image": "768836668890.dkr.ecr.us-east-1.amazonaws.com/app",
+            "cpu": 10,
+            "memory": 500,
+            "portMappings": [
+                {
+                    "containerPort": 49160,
+                    "hostPort": 3000
+                }
+            ],
+            "entryPoint": [
+                "/usr/sbin/apache2",
+                "-D",
+                "FOREGROUND"
+            ],
+            "essential": true
+        }
+    ]
+}

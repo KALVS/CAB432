@@ -1,6 +1,8 @@
 FROM node:carbon
 
-WORKDIR /Users/macboiiii/Documents/GitHub/CAB432/assignment1/app
+RUN mkdir -p ~/app
+
+WORKDIR /app
 
 COPY package*.json ./
 
@@ -8,6 +10,6 @@ RUN npm install --only=production
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["npm", "start"]
