@@ -4,6 +4,7 @@ block content
   h1= title
   p     Welcome to Mindful Meals
   p To begin, simply enter an ingredient or recipe
+
   form(action="/", method='post')
     p Search:
     input(type='text', name='Search')
@@ -59,8 +60,8 @@ block content
           var chart = recipe.chart_div;
           chart = new google.visualization.BarChart(document.getElementById(recipe.chart_div));
           chart.draw(data, options);
-          });
-        }
+        });
       }
+    }
 
       

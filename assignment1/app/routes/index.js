@@ -3,9 +3,10 @@ var router = express.Router();
 var request = require('request-promise');
 
 const food = {
-  api_key: '2bed439467a758c35fb966651013b10f',
+  api_key: '8ad1e94239f58582cfdbdd70bbe86c76',
   nojsoncallback: 1
 }
+
 //This is dumb but was a good idea at the time
 function cleanString(str, dirtyChar, cleanChar) {
   result = str.replace(dirtyChar, cleanChar);
@@ -65,14 +66,14 @@ const edamam = {
 }
 //This takes a recipe's title
 //Done a quick check with old mate Edamam and
-async function getRecipe(edamam, recipe) {
+async function getRecipe(edamam, recipe, vegan) {
   return new Promise(resolve => {
     console.log("The recipe: " + recipe.title);
     if (recipe.title === "NULL") {
       recipe = {
       title: "Please refine search parameters",
       recipeImg: "https://media.giphy.com/media/woxVvsobzJO7u/giphy.gif",
-      source_URL: "NULL",
+      source_URL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       ingredients: ["You", "Didn't", "Say", "The","Magic","Word", "!"],
       yield: "0",
       energy: "0",
@@ -81,9 +82,9 @@ async function getRecipe(edamam, recipe) {
       protein: "0",
       chart_div: Math.random() + '_div'
     }
-    resolve(recipe)
+    resolve(recipe);
     } else {
-      var edamRawURL = `https://api.edamam.com/search?q=${recipe.title}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c`
+      var edamRawURL = `https://api.edamam.com/search?q=${recipe.title}&app_id=b3684a31&app_key=94271fc667d95d0240640d96d0527c5c&Health=peanut-free`
       edamRawURL = cleanString(edamRawURL, /’/g, '');
       var edamURL = encodeURI(edamRawURL);
       let rsp;
@@ -94,6 +95,8 @@ async function getRecipe(edamam, recipe) {
         console.log('error:', error);
         console.log('statusCode:', response && response.statusCode);
         rsp = JSON.parse(body);
+        console.log("Get Recipe response", rsp.hits[0].recipe);
+
         try {
           recipe = {
             title: title,
@@ -125,16 +128,17 @@ async function getRecipe(edamam, recipe) {
   });
 }
 
-async function processArray(edamam, recipes) {
+async function processArray(edamam, recipes, vegan) {
   let newArr = [];
   if (recipes.length > 0) {
     for (var i = 0; i < recipes.length; i++) {
       let recipe = recipes[i];
-      newArr[i] =  await getRecipe(edamam, recipe);
+      newArr[i] =  await getRecipe(edamam, recipe, vegan);
     }
   }else {
     newArr = await getRecipe(edamam, recipes);
   }
+  console.log(newArr);
   return newArr;
 }
 
@@ -145,11 +149,11 @@ router.get('/', function(req, res, next) {
 
 router.post('/', async function(req, res, next) {
   let query = req.body.Search;
+  let vegan = req.body.Vegan;
   const first = await searchForRecipe(food, query);
-  const second = await processArray(edamam, first);
+  const second = await processArray(edamam, first, vegan);
   res.render('index', {title: "You've searched for: " + query, recipes: second});
-  });
-//});
+});
 
 
 module.exports = router;
