@@ -95,8 +95,6 @@ async function getRecipe(edamam, recipe, vegan) {
         console.log('error:', error);
         console.log('statusCode:', response && response.statusCode);
         rsp = JSON.parse(body);
-        console.log("Get Recipe response", rsp.hits[0].recipe);
-
         try {
           recipe = {
             title: title,
